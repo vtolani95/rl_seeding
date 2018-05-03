@@ -1,0 +1,8 @@
+ipython
+numpy
+scipy
+opencv-python
+scikit-image
+gym
+yattag
+networkx

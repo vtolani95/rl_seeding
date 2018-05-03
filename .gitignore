@@ -1,3 +1,7 @@
 *.jpg
 *.png
 *.pkl
+output/
+*.pyc
+envs_rl_seeding/envs_vmpc.egg-info
+*.swp
