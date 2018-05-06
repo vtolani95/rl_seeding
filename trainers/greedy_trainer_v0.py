@@ -6,6 +6,7 @@ import os
 import tensorflow as tf
 from models import _greedy_policy
 from src.tf_utils import add_value_to_summary
+import time
 
 def get_greedy_v0_args(str_):
   t = [('max_episodes', '5e3')]
@@ -79,5 +80,7 @@ class GreedyTrainer():
                              'metrics/{:s}'.format(k), v, log=False, tag_str='metrics/{:s}: '.format(k))
       
       self.logging.writer_val.add_summary(metric_summary_init, 0)
+      time.sleep(2)
       self.logging.writer_val.add_summary(metric_summary_end, global_step)
+      time.sleep(2)
 
