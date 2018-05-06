@@ -4,6 +4,7 @@ from gym.utils import seeding
 from src import utils
 import numpy as np
 import networkx as nx
+import tensorflow as tf
 
 class SocialNetworkGraphEnv(gym.Env):
 
@@ -65,7 +66,8 @@ class SocialNetworkGraphEnv(gym.Env):
                             graph_obs_version=graph_obs_version)
     
     #setup observation and action spaces
-    self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(graph_n**2+graph_n,))
+    self.obs_sizes = (graph_n**2, graph_n, 2)
+    self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(np.sum(self.obs_sizes),))
     self.action_space = spaces.Discrete(graph_n)
     self.num_actions = graph_n
   
@@ -118,6 +120,7 @@ class SocialNetworkGraphEnv(gym.Env):
     #metrics
     self.percent_nodes_seeded = []
     self.rewards = []
+    return self._get_obs()
 
   def _init_graph(self):
     rng, ng, ne, nA = self.rng, self.params.graph_n, self.params.edges_n, self.params.n_init_a
@@ -163,9 +166,13 @@ class SocialNetworkGraphEnv(gym.Env):
     t = np.concatenate(t)
     return t
 
-  def _deserialize_obs(self, obss):
+  def _deserialize_obs(self, obs):
     if self.params.graph_obs_version == 0:
-      import pdb; pdb.set_trace()
-      t=
+      graph_size, pro_A_size, time_size = self.obs_sizes
+      other_size = pro_A_size + time_size
+      img, other = tf.split(obs, [graph_size, other_size], axis=1)
+      img = tf.reshape(img, [-1, self.params.graph_n, self.params.graph_n, 1])
+      other = tf.reshape(other, [-1, other_size])
+      return {'img': img, 'other': other}
     else:
       assert(False) 
