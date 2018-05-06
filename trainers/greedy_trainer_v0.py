@@ -4,10 +4,10 @@ from src import utils
 import numpy as np
 import os
 import tensorflow as tf
-from models import _random_policy
+from models import _greedy_policy
 from src.tf_utils import add_value_to_summary
 
-def get_random_v0_args(str_):
+def get_greedy_v0_args(str_):
   t = [('max_episodes', '5e3')]
   da = utils.DefArgs(t)
   args = da.process_string(str_)
@@ -16,7 +16,7 @@ def get_random_v0_args(str_):
     vs[k] = int(utils.str_to_float(vs[k]))
   return vs
 
-class RandomTrainer():
+class GreedyTrainer():
   def __init__(self, env_name, env_kwargs, trainer_kwargs, other_kwargs, logdir):
     self.env_name = env_name
     self.env_kwargs = env_kwargs
@@ -32,7 +32,7 @@ class RandomTrainer():
       self.env_train.configure(purpose='training', **env_kwargs)
       self.env_val.configure(purpose='test', **env_kwargs)
 
-    self.pi = lambda obs: _random_policy(obs, self.env_val) 
+    self.pi = lambda obs: _greedy_policy(obs, self.env_val) 
   
     self.logdir = logdir
     utils.mkdir_if_missing(self.logdir)
@@ -60,6 +60,7 @@ class RandomTrainer():
         obs, done = env.reset(), False
         obss, actions, rewards = [obs], [], []
         while not done:
+          #import pdb; pdb.set_trace()
           action = self.pi(obs)
           obs, rew, done, _ = env.step(action)
           obss.append(obs); actions.append(action); rewards.append(rew)

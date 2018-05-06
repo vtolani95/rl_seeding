@@ -29,9 +29,9 @@ class SocialNetworkGraphEnv(gym.Env):
   @staticmethod
   def collect_metrics(ms):
     ms = np.array(ms)
-    total_reward, final_pro_A, episode_len = ms.T
-    keys = ['reward', 'percent_pro_A', 'episode_len']
-    vals = [total_reward, final_pro_A, episode_len]
+    total_reward, final_pro_A, full_cascades, episode_len = ms.T
+    keys = ['reward', 'percent_pro_A', 'full_cascades', 'episode_len']
+    vals = [total_reward, final_pro_A, full_cascades, episode_len]
     fns = [np.mean, lambda x: np.percentile(x, q=25), lambda x:
       np.percentile(x, q=50), lambda x: np.percentile(x, q=75)]
     fn_names = ['mu', '25', '50', '75']
@@ -46,8 +46,9 @@ class SocialNetworkGraphEnv(gym.Env):
   def get_metrics(self):
     total_reward = np.sum(self.rewards)
     final_pro_A = np.mean(self.pro_A)
+    full_cascades = int(np.sum(self.pro_A) == len(self.pro_A)) 
     episode_len = self.t*1.
-    tt = np.array([total_reward, final_pro_A, episode_len])
+    tt = np.array([total_reward, final_pro_A, full_cascades, episode_len])
     return tt
 
   def configure(self, purpose, method_name, graph_n, edges_n,

@@ -2,6 +2,7 @@ from envs_rl_seeding.envs import SocialNetworkGraphEnv
 from trainers.dqn_trainer_v0 import DQNTrainer, get_dqn_v0_args
 from trainers.random_trainer_v0 import RandomTrainer, get_random_v0_args
 from trainers.exhaustive_trainer_v0 import ExhaustiveTrainer, get_exhaustive_v0_args
+from trainers.greedy_trainer_v0 import GreedyTrainer, get_greedy_v0_args
 from src import utils
 from _logging import logging
 from baselines import logger
@@ -49,6 +50,8 @@ def main(_):
     trainer_kwargs, trainer_name = get_random_v0_args(trainer_str), 'randomV0'
   elif env_kwargs['method_name'] == 'exhaustiveV0':
     trainer_kwargs, trainer_name = get_exhaustive_v0_args(trainer_str), 'exhaustiveV0'
+  elif env_kwargs['method_name'] == 'greedyV0':
+    trainer_kwargs, trainer_name = get_greedy_v0_args(trainer_str), 'greedyV0'
   else:
     assert(False)
 
@@ -75,9 +78,15 @@ def main(_):
   elif env_kwargs['method_name'] == 'exhaustiveV0':
     exhaustiveTrainer = ExhaustiveTrainer()
     exhaustiveTrainer.train()
+  elif env_kwargs['method_name'] == 'greedyV0':
+    greedyTrainer = GreedyTrainer(env_name=other_kwargs['social_network_graph_env'],
+                                  env_kwargs=env_kwargs,
+                                  trainer_kwargs=trainer_kwargs,
+                                  other_kwargs=other_kwargs,
+                                  logdir=logdir)
+    greedyTrainer.train()
   else:
     assert(False)
-
 
 if __name__ == '__main__':
   app.run()
