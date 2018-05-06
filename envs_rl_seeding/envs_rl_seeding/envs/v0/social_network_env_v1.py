@@ -12,12 +12,13 @@ class SocialNetworkGraphEnv(gym.Env):
     t = [('method_name', 'ours'), ('graph_n', '64'),
         ('edges_n', '200'), ('n_init_a', '10'), 
         ('threshold_q', '.5'), ('num_seeds', '4'),
-        ('reward_version', '0'), ('seed', '0')]
+        ('reward_version', '0'), ('seed', '0'),
+        ('graph_obs_version', '0')]
     da = utils.DefArgs(t)
     args = da.process_string(str_)
     vs = vars(args)
 
-    for k in ['graph_n', 'edges_n', 'n_init_a', 'num_seeds', 'reward_version', 'seed']:
+    for k in ['graph_n', 'edges_n', 'n_init_a', 'num_seeds', 'reward_version', 'seed', 'graph_obs_version']:
       vs[k] = int(utils.str_to_float(vs[k]))
 
     for k in ['threshold_q']:
@@ -53,14 +54,15 @@ class SocialNetworkGraphEnv(gym.Env):
 
   def configure(self, purpose, method_name, graph_n, edges_n,
                 n_init_a, threshold_q, num_seeds,
-                reward_version, seed):
+                reward_version, seed, graph_obs_version):
     self.purpose = purpose
     self.T = num_seeds#number of people the agent can seed (max horizon for an episode)
     self.seed = seed
     self.rng = np.random.RandomState(self.seed)
     self.params = utils.Foo(method_name=method_name, graph_n=graph_n,
                             edges_n=edges_n, threshold_q=threshold_q,
-                            reward_version=reward_version, n_init_a=n_init_a)
+                            reward_version=reward_version, n_init_a=n_init_a,
+                            graph_obs_version=graph_obs_version)
     
     #setup observation and action spaces
     self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(graph_n**2+graph_n,))
@@ -140,16 +142,20 @@ class SocialNetworkGraphEnv(gym.Env):
   #here a 1 represent an edge between nodes
   #and 0 represent no edge
   def _get_graph_obs(self):
-    ng = self.params.graph_n
-    img = np.eye(ng)
-    for edge in self.G.edges():
-      x,y = edge#implicitly undirected so mark both entries in the img
-      img[x,y] = 1.0
-      img[y,x] = 1.0
-    return img
+    if self.params.graph_obs_version == 0:
+      ng = self.params.graph_n
+      img = np.eye(ng)
+      for edge in self.G.edges():
+        x,y = edge#implicitly undirected so mark both entries in the img
+        img[x,y] = 1.0
+        img[y,x] = 1.0
+      return img
+    else:
+      assert(False)
 
   def _get_obs(self):
-    obss = (self._get_graph_obs(), self.pro_A)
+    t_obs = np.array([self.t*1., self.T*1.])
+    obss = (self._get_graph_obs(), self.pro_A, t_obs)
     return self._serialize_obs(obss)
 
   def _serialize_obs(self, obss):
@@ -158,4 +164,8 @@ class SocialNetworkGraphEnv(gym.Env):
     return t
 
   def _deserialize_obs(self, obss):
-    pass 
+    if self.params.graph_obs_version == 0:
+      import pdb; pdb.set_trace()
+      t=
+    else:
+      assert(False) 

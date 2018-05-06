@@ -76,7 +76,12 @@ def main(_):
                                   logdir=logdir)
     randomTrainer.train()
   elif env_kwargs['method_name'] == 'exhaustiveV0':
-    exhaustiveTrainer = ExhaustiveTrainer()
+    exhaustiveTrainer = ExhaustiveTrainer(env_name=other_kwargs['social_network_graph_env'],
+                                  env_kwargs=env_kwargs,
+                                  trainer_kwargs=trainer_kwargs,
+                                  other_kwargs=other_kwargs,
+                                  logdir=logdir)
+
     exhaustiveTrainer.train()
   elif env_kwargs['method_name'] == 'greedyV0':
     greedyTrainer = GreedyTrainer(env_name=other_kwargs['social_network_graph_env'],
