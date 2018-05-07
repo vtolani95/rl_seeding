@@ -10,9 +10,9 @@ from baselines import deepq, logger
 
 
 def get_dqn_v0_args(str_):
-  t = [('lr', '5en4'), ('max_timesteps', '1e7'), ('buffer_size', '5e4'),
+  t = [('lr', '5en4'), ('max_timesteps', '1e5'), ('buffer_size', '5e4'),
     ('exploration_fraction', '1en1'), ('exploration_final_eps', '0x02'),
-    ('train_freq', '100.'), ('batch_size', '32'), ('learning_starts', '5000'),
+    ('train_freq', '100.'), ('batch_size', '32'), ('learning_starts', '1000'),
     ('gamma', '1x0'), ('target_network_update_freq', '1e5'), 
     ('prioritized_replay', '0'), ('cnn_model', '0'), ('print_freq', '1000')]
   da = utils.DefArgs(t)
@@ -73,12 +73,27 @@ class DQNTrainer():
     print_freq = lcl['print_freq']
     if t > self.trainer_kwargs['learning_starts']:
       if t % print_freq == 0:
+        logger.error('Num Steps: %d'%(t))
+        self.callback_logging(lcl, glb)
         self.callback_val_vis(lcl, glb,
                           num_rollouts=self.other_kwargs['num_valid'],
                           plot=True)
+        logger.error('')
       if  t % (print_freq*15) == 0:
-        self.callback_snapshot(lcl, glb) 
-      
+        self.callback_snapshot(lcl, glb)
+     
+
+  def callback_logging(self, lcl, glb):
+    metric_summary = tf.summary.Summary()
+    global_step = lcl['t']
+    if 'td_errors' in lcl:
+      add_value_to_summary(metric_summary, 'td_errors', 
+        np.mean(np.abs(lcl['td_errors'])), log=False)
+
+    add_value_to_summary(metric_summary, 'exploration', lcl['exploration'].value(global_step), log=False)
+    add_value_to_summary(metric_summary, 'episodes', len(lcl['episode_rewards']), log=False)
+    self.logging.writer_val.add_summary(metric_summary, global_step) 
+
   def callback_setup_saver(self):
     self.logging.saver = tf.train.Saver(keep_checkpoint_every_n_hours=4, 
       max_to_keep=8, pad_step_number=True)
@@ -108,7 +123,7 @@ class DQNTrainer():
         obsss.append(obss); actionss.append(actions); rewardss.append(rewards)  
         m = env.get_metrics()
         ms.append(m)
-      
+     
       metric_names, metric_vals = env.collect_metrics(ms)
       metric_summary_init = tf.summary.Summary()
       metric_summary_end = tf.summary.Summary()
@@ -119,4 +134,4 @@ class DQNTrainer():
                              'metrics/{:s}'.format(k), v, log=False, tag_str='metrics/{:s}: '.format(k))
       
       self.logging.writer_val.add_summary(metric_summary_init, global_step)
-
+      logger.error('')

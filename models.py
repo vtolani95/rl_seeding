@@ -67,6 +67,5 @@ def _dqn_policy(hiddens, inpt, num_actions, scope, env, cnn_model, reuse=False):
         out = layers.fully_connected(out, num_outputs=hidden, activation_fn=tf.nn.relu)
 
     with tf.variable_scope('out', reuse=reuse):
-      q_out = layers.fully_connected(out, num_outputs=1, activation_fn=None)
-
+      q_out = layers.fully_connected(out, num_outputs=num_actions, activation_fn=None)
     return q_out 
